@@ -1,1 +1,1 @@
-hello
+# MyCoin
