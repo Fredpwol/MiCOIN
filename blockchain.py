@@ -8,6 +8,7 @@ from utility.verification import Verification
 from utility.hash_util import hash_block
 from block import Block
 from transactions import Transaction
+from wallet import Wallet
 
 GENESIS_BLOCK = Block(0, '', [],None, 0)
 MINING_REWARD = 10  # this ia The reward amount given to miners
@@ -125,7 +126,7 @@ class Blockchain():
         last_block = self.__chain[-1]
         last_hash = hash_block(last_block)
         proof = 0
-        while not Verification.valid_proof(self.get_otx(),last_hash,proof):
+        while not Verification.valid_proof(self.get_otx(), last_hash, proof):
             proof += 1
         return proof
 
@@ -142,11 +143,14 @@ class Blockchain():
         # COPIED_TRANSACTION: This copies the outstanding transaction in case of a situation the mining Fails
         # And it also copied the block to mined and append the mining reward to it to show its been mined
         copied_transaction = self.__outstanding_transaction[:]
+        for i, tx in enumerate(copied_transaction):
+            if not Wallet.verify_signature(tx):
+                block.transaction.pop(i) #remove the block from the transaction don't know if should return coin back to sender? consider that later.
         copied_transaction.append(reward)
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
         print(hashed_block)
-        block = Block(len(self.__chain),hashed_block,copied_transaction,proof,)
+        block = Block(len(self.__chain),hashed_block,copied_transaction,proof)
         self.__chain.append(block)
         self.__outstanding_transaction = []
         self.add_data()
