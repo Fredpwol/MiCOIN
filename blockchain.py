@@ -47,22 +47,19 @@ class Blockchain():
         """
         try:
             with open('blockchain.txt', mode='r') as b:
-                # print(block_data)
-                # blockchain = block_data['chain']
-                # outstanding_transaction = block_data['ot']
                 block_data = b.readlines()
                 blockchain = json.loads(block_data[0][:-1])
                 outstanding_transaction = json.loads(block_data[1])
                 updated_blockchain = []
                 for block in blockchain:
-                    orderd_transactions = [Transaction(tx['sender'],tx['recipient'],tx['amount']) for tx in block['transaction']]
+                    orderd_transactions = [Transaction(tx['sender'],tx['recipient'],tx['amount'], tx["signature"]) for tx in block['transaction']]
                     # The updated_block assigns The block saved in the blockchain file to the Block class and assigns instatiate it to update_block
                     update_block = Block(block['index'],block['previous_hash'],orderd_transactions,block['proof'],block['timestamp'])
                     updated_blockchain.append(update_block)  # appends the block object to the updated_blockchain list
                 self.blockchain = updated_blockchain 
                 updated_tx = []
                 for tx in outstanding_transaction:
-                    update_tx = Transaction(tx['sender'],tx['recipient'],tx['amount'])
+                    update_tx = Transaction(tx['sender'],tx['recipient'],tx['amount'],tx["signature"])
                     updated_tx.append(update_tx)
                 self.__outstanding_transaction = updated_tx
         except (IOError,IndexError):
@@ -80,29 +77,20 @@ class Blockchain():
                 f.write('\n')
                 save_tx = [tx.__dict__ for tx in self.get_otx()]
                 f.write(json.dumps(save_tx))
-                # saved_data = {'chain':blockchain,
-                #             'ot':outstanding_transaction
-                #             }
-                # f.write(pickle.dumps(saved_data))
         except IOError:
             print('Failed to Save!')
 
 
-    def add_transaction(self,recipient , amount ,sender):
+    def add_transaction(self, recipient , amount, signature, sender):
         """adds value to the blockchain
         Arguments:
             sender: This is the sender of the coin
             recipient: This is the reciever of the coin whom is sent to
             ammount: This is the ammount that is been sent;"""
-        # transaction_data = {
-        #     'sender':sender,
-        #     'recipient':recipient,
-        #     'amount':amount
-        # }
         if self.owner == None:
             return False
 
-        transaction_data = Transaction(sender,recipient,amount)
+        transaction_data = Transaction(sender,recipient,amount, signature)
         # Checks if the Sender has enough amount left to send if so The transaction is Valid  and added to the oustanding ...
         # .....transaction where it will be proccesed into the blockchain.
         if Verification.verify_transaction(transaction_data,self.get_balance):
@@ -150,12 +138,7 @@ class Blockchain():
         if self.owner == None:
             return False
         proof = self.proof_of_work()
-        # reward = {
-        #     'sender':'SYSTEM',
-        #     'recipient':Owner,
-        #     'amount':MINING_REWARD
-        #         }
-        reward = Transaction('SYSTEM',self.owner,MINING_REWARD)
+        reward = Transaction('SYSTEM',self.owner,MINING_REWARD, "")
         # COPIED_TRANSACTION: This copies the outstanding transaction in case of a situation the mining Fails
         # And it also copied the block to mined and append the mining reward to it to show its been mined
         copied_transaction = self.__outstanding_transaction[:]
