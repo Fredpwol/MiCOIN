@@ -31,13 +31,24 @@ class Wallet:
         return (binascii.hexlify(private_key.exportKey(format="DER")).decode("ascii"),binascii.hexlify(public_key.exportKey(format="DER")).decode("ascii"))
     
 
-    def generate_signature(self, sender, reciepient, amount):
+    def generate_signature(self, sender, recipient, amount):
         """
         generates signature for a transaction.
         """
-        signer = PKCS1_v1_5.new(RSA.importKey(binascii.unhexlify(self.private_key)))
-        tx_hash = SHA256.new((str(sender) + str(reciepient) + str(amount)).encode("utf-8"))
+        private_key_raw = RSA.importKey(binascii.unhexlify(self.private_key))
+        signer = PKCS1_v1_5.new(private_key_raw)
+        tx_hash = SHA256.new((str(sender) + str(recipient) + str(amount)).encode("utf-8"))
 
         signature = signer.sign(tx_hash)
 
         return binascii.hexlify(signature).decode("ascii")
+
+    @staticmethod
+    def verify_signature(transaction):
+        if transaction.sender === "SYSTEM":
+            return True
+        public_key_raw = RSA.importKey(binascii.unhexlify(transaction.sender))
+        verifier = PKCS1_v1_5.new(public_key_raw)
+        tx_hash = SHA256.new((str(transaction.sender) + str(transaction.recipient) + str(transaction.amount)).encode("utf-8"))
+
+        return verifier.verify(tx_hash, binascii.unhexlify(transaction.signature))
