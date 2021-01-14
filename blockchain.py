@@ -39,6 +39,12 @@ class Blockchain():
             return None
         return self.__chain[-1]
 
+    def serialize_chain(self):
+        res = [ block.__dict__.copy() for block in self.blockchain ]
+        for block in res:
+            block["transaction"] = [ tx.__dict__.copy() for tx in  block["transaction"] ]
+        return res
+        
 
     def load_data(self):
         """
@@ -145,7 +151,7 @@ class Blockchain():
         copied_transaction = self.__outstanding_transaction[:]
         for i, tx in enumerate(copied_transaction):
             if not Wallet.verify_signature(tx):
-                block.transaction.pop(i) #remove the block from the transaction don't know if should return coin back to sender? consider that later.
+                copied_transaction.pop(i) #remove the block from the transaction don't know if should return coin back to sender? consider that later.
         copied_transaction.append(reward)
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
