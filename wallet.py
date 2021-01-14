@@ -45,7 +45,7 @@ class Wallet:
 
     @staticmethod
     def verify_signature(transaction):
-        if transaction.sender === "SYSTEM":
+        if transaction.sender == "SYSTEM":
             return True
         public_key_raw = RSA.importKey(binascii.unhexlify(transaction.sender))
         verifier = PKCS1_v1_5.new(public_key_raw)
