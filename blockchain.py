@@ -100,11 +100,6 @@ class Blockchain:
                 f.write(json.dumps(saveable_tx))
                 f.write('\n')
                 f.write(json.dumps(list(self.__peer_nodes)))
-                # save_data = {
-                #     'chain': blockchain,
-                #     'ot': open_transactions
-                # }
-                # f.write(pickle.dumps(save_data))
         except IOError:
             print('Saving failed!')
 
@@ -166,13 +161,6 @@ class Blockchain:
             :recipient: The recipient of the coins.
             :amount: The amount of coins sent with the transaction (default = 1.0)
         """
-        # transaction = {
-        #     'sender': sender,
-        #     'recipient': recipient,
-        #     'amount': amount
-        # }
-        # if self.public_key == None:
-        #     return False
         transaction = Transaction(sender, recipient, signature, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
@@ -200,12 +188,7 @@ class Blockchain:
         # Hash the last block (=> to be able to compare it to the stored hash value)
         hashed_block = hash_block(last_block)
         proof = self.proof_of_work()
-        # Miners should be rewarded, so let's create a reward transaction
-        # reward_transaction = {
-        #     'sender': 'MINING',
-        #     'recipient': owner,
-        #     'amount': MINING_REWARD
-        # }
+        # Miners should be rewarded
         reward_transaction = Transaction(
             'MINING', self.public_key, '', MINING_REWARD)
         # Copy transaction instead of manipulating the original open_transactions list
