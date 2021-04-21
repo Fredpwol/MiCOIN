@@ -32,7 +32,7 @@ class Blockchain:
         # Our starting block for the blockchain
         genesis_block = Block(0, '', [], 100, 0)
         # Initializing our (empty) blockchain list
-        self.chain = [genesis_block]
+        self.__chain = [genesis_block]
         # Unhandled transactions
         self.__open_transactions = []
         self.public_key = public_key
